@@ -22,4 +22,3 @@ jobs:
           cd terraform/envs/${{ matrix.env }}
           terraform init -backend-config="bucket=shared-services-state-${{ matrix.env }}"
           terraform apply -auto-approve
-```
