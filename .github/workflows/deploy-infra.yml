@@ -6,19 +6,31 @@ on:
     paths:
       - "terraform/**"
 jobs:
-  provision:
+  deploy-dev:
+    name: Deploy to Dev
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        env: ["dev","prod"]
-    environment: ${{ matrix.env }}
     steps:
       - uses: actions/checkout@v3
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ vars.terraform }}
-      - name: Terraform Init & Apply
+      - name: Terraform Init & Apply (dev)
         run: |
-          cd terraform/envs/${{ matrix.env }}
-          terraform init -backend-config="bucket=shared-services-state-${{ matrix.env }}"
+          cd terraform/envs/dev
+          terraform init -backend-config="bucket=shared-services-state-dev"
+          terraform apply -auto-approve
+  deploy-prod:
+    name: Deploy to Prod
+    needs: deploy-dev
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ vars.terraform }}
+      - name: Terraform Init & Apply (prod)
+        run: |
+          cd terraform/envs/prod
+          terraform init -backend-config="bucket=shared-services-state-prod"
           terraform apply -auto-approve
