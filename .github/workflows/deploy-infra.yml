@@ -1,0 +1,25 @@
+name: Deploy Infrastructure
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "terraform/**"
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        env: ["dev","prod"]
+    environment: ${{ matrix.env }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ vars.terraform }}
+      - name: Terraform Init & Apply
+        run: |
+          cd terraform/envs/${{ matrix.env }}
+          terraform init -backend-config="bucket=shared-services-state-${{ matrix.env }}"
+          terraform apply -auto-approve
+```

@@ -1,0 +1,16 @@
+name: Bake Runner AMI
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "packer/**"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hashicorp/setup-packer@v2
+      - name: Packer Init
+        run: packer init packer/runner.pkr.hcl
+      - name: Packer Build
+        run: packer build -var "runner_version=${{ vars.runner_version }}" packer/runner.p
